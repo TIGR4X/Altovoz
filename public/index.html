@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reconocimiento de Voz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: white;
+      transition: background-color 0.5s ease;
+    }
+    .output {
+      font-size: 24px;
+      margin-top: 20px;
+      color: black;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Comienza a Hablar para Cambiar el Color del Fondo</h1>
+  <p>Haz clic en el botón y di un color para cambiar el fondo o alguna frase.</p>
+  <div class="output">El resultado aparecerá aquí.</div>
+  <button id="start-btn">Iniciar Reconocimiento de Voz</button>
+
+  <script>
+    // Compatibilidad con diferentes navegadores
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+
+    if (SpeechRecognition && SpeechGrammarList) {
+      // Definir la gramática de los colores
+      const grammar = "#JSGF V1.0; grammar colors; public <color> = red | blue | green | yellow | pink | purple ;";
+      const recognition = new SpeechRecognition();
+      const speechRecognitionList = new SpeechGrammarList();
+      speechRecognitionList.addFromString(grammar, 1);
+      recognition.grammars = speechRecognitionList;
+      recognition.continuous = false;
+      recognition.lang = 'es-ES';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      const output = document.querySelector('.output');
+      const bg = document.querySelector('body');
+      const startBtn = document.getElementById('start-btn');
+
+      // Iniciar el reconocimiento al hacer clic en el botón
+      startBtn.onclick = () => {
+        recognition.start();
+        output.textContent = 'Escuchando...';
+      };
+
+      // Manejar el resultado del reconocimiento de voz
+      recognition.onresult = (event) => {
+        const speechResult = event.results[0][0].transcript.toLowerCase();
+        output.textContent = `Dijiste: ${speechResult}`;
+        if (speechResult.includes('color')) {
+          const color = speechResult.split(' ').pop();
+          bg.style.backgroundColor = color;
+        }
+      };
+
+      recognition.onspeechend = () => {
+        recognition.stop();
+      };
+
+      recognition.onerror = (event) => {
+        output.textContent = 'Error en el reconocimiento: ' + event.error;
+      };
+    } else {
+      alert("API de reconocimiento de voz no soportada en este navegador.");
+    }
+  </script>
+</body>
+</html>
