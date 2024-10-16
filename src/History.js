@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button, Card, Container, Row, Col } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const History = () => {
   const location = useLocation(); // Usamos useLocation para acceder a la ubicación y el estado
+  const navigate = useNavigate();
   const { userData, response } = location.state || {}; // Desestructuramos userData y response
 
   const downloadPDF = () => {
@@ -39,6 +40,7 @@ const History = () => {
               <Button variant="success" onClick={downloadPDF}>Descargar Recomendaciones como PDF</Button>
               {/* Añadir un botón para ir al control semanal */}
               <Button variant="info" className="mt-3" href="/progress">Control Semanal</Button>
+              <Button onClick={() => navigate('/record-history')} variant="secondary" className="mt-3 ml-2">Ver Historial</Button>
             </Card.Body>
           </Card>
         </Col>

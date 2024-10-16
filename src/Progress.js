@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Button, Card, Container, Row, Col } from 'react-bootstrap';
 import { TextField, Typography } from '@mui/material';
+import { addProgressRecord } from './db';
+import { useNavigate } from 'react-router-dom';
 
 const Progress = () => {
   const [physicalFeelings, setPhysicalFeelings] = useState('');
   const [emotionalFeelings, setEmotionalFeelings] = useState('');
   const [isListening, setIsListening] = useState(false); // Estado para controlar si está escuchando
+
+  const navigate = useNavigate();
 
   const startRecognition = (setFeeling) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -40,12 +44,20 @@ const Progress = () => {
     recognition.start(); // Iniciar el reconocimiento
   };
 
-  const submitProgress = () => {
-    // Aquí puedes enviar el progreso a un backend o almacenarlo
-    console.log('Progreso enviado:', { physicalFeelings, emotionalFeelings });
-    // Reiniciar campos después de enviar
+  const submitProgress = async () => {
+    const progressRecord = {
+      physicalFeelings,
+      emotionalFeelings,
+      date: new Date().toISOString()
+    };
+    await addProgressRecord(progressRecord);
+    console.log('Progreso enviado:', progressRecord);
     setPhysicalFeelings('');
     setEmotionalFeelings('');
+  };
+
+  const handleGoBack = () => {
+    navigate(-1); // Esto llevará al usuario a la página anterior
   };
 
   return (
@@ -84,7 +96,8 @@ const Progress = () => {
                 </Button>
               </Card.Text>
               <Button variant="success" onClick={submitProgress}>Enviar Progreso</Button>
-            </Card.Body>
+              <Button variant="secondary" onClick={handleGoBack} className="ml-2">Volver Atrás</Button>
+              </Card.Body>
           </Card>
         </Col>
       </Row>

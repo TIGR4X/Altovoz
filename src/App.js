@@ -6,7 +6,9 @@ import { Button, Card, Container, Row, Col, ProgressBar } from 'react-bootstrap'
 import { CardContent, Typography } from '@mui/material';
 import History from './History'; // Nueva página para recomendaciones e historial
 import Progress from './Progress'; // Importar la nueva página de control semanal
+import RecordHistory from './RecordHistory';
 import './App.css';
+import { addRecord } from './db';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -21,6 +23,20 @@ const App = () => {
     physicalSymptoms: '',
     emotionalSymptoms: '',
   });
+  const resetForm = () => {
+  setStep(1);
+  setUserData({
+    name: '',
+    age: '',
+    addiction: '',
+    goal: '',
+    motive: '',
+    physicalSymptoms: '',
+    emotionalSymptoms: '',
+  });
+  setTranscript('');
+  setResponse('');
+};
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
@@ -37,7 +53,7 @@ const App = () => {
       if (step === 7) setUserData({ ...userData, emotionalSymptoms: transcript });
     }
   }, [transcript, step]);
-
+  
   const startRecognition = () => {
     const recognition = new SpeechRecognition();
     recognition.lang = 'es-ES';
@@ -84,7 +100,15 @@ const App = () => {
           Authorization: `Bearer ${apiKey}`
         }
       });
-      setResponse(response.data.choices[0].message.content);
+      const aiResponse = response.data.choices[0].message.content;
+      setResponse(aiResponse);
+
+      await addRecord({
+        ...userData,
+        aiResponse,
+        date: new Date().toISOString()
+      });
+
       // Redirigir a la página de recomendaciones, pasando los datos
       navigate('/history', { state: { userData, response: response.data.choices[0].message.content } });
     } catch (error) {
@@ -155,6 +179,11 @@ const App = () => {
                     Consultas y Recomendaciones
                   </Button>
                 )}
+                {step === 7 && (
+                  <Button onClick={resetForm} variant="primary" className="mt-3">
+                  Reiniciar Cuestionario
+                  </Button>
+                )}
               </div>
 
               {response && (
@@ -183,6 +212,7 @@ const Main = () => (
       <Route path="/" element={<App />} />
       <Route path="/history" element={<History />} /> {/* Nueva ruta para historial */}
       <Route path="/progress" element={<Progress />} /> {/* Nueva ruta para control semanal */}
+      <Route path="/record-history" element={<RecordHistory />} />
     </Routes>
   </Router>
 );
